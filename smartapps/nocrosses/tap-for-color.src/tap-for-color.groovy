@@ -69,60 +69,55 @@ def switchHandler(evt) {
  def changeColor()
  {
      log.trace "Begin change color";
-	// find the currently turned on bulbs
+ 
+ 	//define the bulb settings to cycle through
+ 	def colorOptions = [
+    	[color: [hue: 70, saturation: 100], temp:0], //blue
+        [color: [hue: 77, saturation: 100], temp:0], //purple    
+        [color: [hue: 0, saturation: 100], temp:0], //red    
+        [color: [hue: 83, saturation: 100], temp:0], //pink    
+		[color: [hue: 10, saturation: 100], temp:0], //orange   
+        [color: [hue: 25, saturation: 100], temp:0], //yellow 
+        [color: [hue: 34.5, saturation: 100], temp:0], //green    
+        [color: [hue: 0, saturation: 0], temp:3000], //Warm White
+        [color: [hue: 0, saturation: 0], temp:4000], //Cool White 
+        [color: [hue: 0, saturation: 0], temp:5001] //Daylight
+    ];
+    
+    log.trace "Color options defined";
+	
+    // find the currently turned on bulbs
     def onBulbs = bulbs.findAll { switchVal ->
         switchVal == "on" ? true : false
     }
+    
+    log.trace "Bulbs found: $onBulbs.size()";
+    
     // Set the bulb color to the next in line
-    def colorIndex = state.color ?: 1;   
+    def colorIndex = atomicState.color ?: 0;   
+    
+    log.trace "Current color index: $colorIndex";
+    
+    log.trace "Number of color options: $colorOptions.size()";
  
-    if(colorIndex > 10)
-		colorIndex = 1;  
-    
-    def hueColor = 0
-    def hueSaturation = 100
-    def colorTemperature = 0
-    log.trace("Default values, hue: {hueColor} saturation {hueSaturation} temp: {colorTemperature}");
-    if(colorIndex == 1)//Blue
-		hueColor = 70//60
-    if(colorIndex == 2)//red
-		hueColor = 0
-    else if(colorIndex == 3)//Pink
-		hueColor = 83
-	else if(colorIndex == 4)//Green
-		hueColor = 34.58611111111111//30
-	else if(colorIndex == 5)//Yellow
-		hueColor = 25//16
-	else if(colorIndex == 6)//Orange
-		hueColor = 10
-	else if(colorIndex == 7)//Purple
-		hueColor = 77.24444444444444
-    else if(colorIndex == 8)
-        colorTemperature = 3000
-    else if(colorIndex == 9)
-		colorTemperature = 4000
-    else if(colorIndex == 10)//Daylight
-		colorTemperature = 5001
-    
-   
-    if(colorIndex > 7)
-    	hueSaturation = 0
-    log.trace("Set values, hue: {hueColor} saturation {hueSaturation} temp: {colorTemperature}");   
+    if(colorIndex > colorOptions.size())
+		colorIndex = 0;  
+        
+    def currentColor = colorOptions[colorIndex];
     
     atomicState.color = colorIndex +1;
     
-    log.trace "hue color:" + hueColor;
-    log.trace "color temperature:" + colorTemperature;
+    log.trace "Current color: $currentColor";
     
-    bulbs*.setColor(hue: hueColor, saturation: hueSaturation);
+    bulbs*.setColor(currentColor.color);
     
-     if(colorTemperature > 0)
-     bulbs*.setColorTemperature(colorTemperature);
+     if(currentColor.temp > 0)
+     bulbs*.setColorTemperature(currentColor.temp);
 }
 
 def clearState(evt)
 {
 	log.trace "State before remove" + atomicState.color
 	atomicState.color = null;
-    log.trave "State after remove " + atomicState.color
+    log.trace "State after remove " + atomicState.color
 }
