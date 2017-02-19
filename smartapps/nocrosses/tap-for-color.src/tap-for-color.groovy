@@ -54,14 +54,21 @@ def updated()
 }
 
 def switchHandler(evt) {
-	log.info evt.value
-    log.info atomicState.color;
-    if(atomicState.color==null)
+	log.info "Event value: $evt.value";
+    log.info "State color: $state.color";
+    log.info "State reset: $state.reset";
+    
+    //Check to see if the cycle should be reset
+    if(state.reset != 0)
     {
-    log.info "Set default color";
-   		atomicState.color = 0;    
+   		log.info "Set default color";
+  		state.reset = 0;
+   		state.color = 0;    
+        log.info "State color: $state.color";
+    	log.info "State reset: $state.reset";        
     }
     else{
+    log.info "Calling change color";
     	changeColor()
     }
  }
@@ -94,7 +101,7 @@ def switchHandler(evt) {
     log.trace "Bulbs found: $onBulbs.size()";
     
     // Set the bulb color to the next in line
-    def colorIndex = atomicState.color ?: 0;   
+    def colorIndex = state.color ?: 0;   
     
     log.trace "Current color index: $colorIndex";
     
@@ -105,7 +112,7 @@ def switchHandler(evt) {
         
     def currentColor = colorOptions[colorIndex];
     
-    atomicState.color = colorIndex +1;
+    state.color = colorIndex +1;
     
     log.trace "Current color: $currentColor";
     
@@ -117,7 +124,7 @@ def switchHandler(evt) {
 
 def clearState(evt)
 {
-	log.trace "State before remove" + atomicState.color
-	atomicState.color = null;
-    log.trace "State after remove " + atomicState.color
+	log.trace "State before remove" + state.color
+	state.reset = 1;
+    log.trace "State after remove " + state.color
 }
